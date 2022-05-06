@@ -1,0 +1,6 @@
+/auth/storage
+/auth/tmp
+/docker-composes/rabbitmq/tmp
+/*/log/
+/*/tmp/
+/*/node_modules

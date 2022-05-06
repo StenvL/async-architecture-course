@@ -1,0 +1,23 @@
+version: '3.9'
+services:
+  mysql:
+    container_name: mysql
+    image: mariadb
+    ports:
+      - '3306:3306'
+    volumes:
+      - ./volumes/mysql:/var/lib/mysql
+      - ./db/init.sql:/init.sql
+    command: --init-file /init.sql
+    environment:
+      MYSQL_ROOT_PASSWORD: pass
+
+  rabbit_mq:
+    container_name: rabbit_mq
+    image: rabbitmq:3.6.5-management
+    ports:
+      - '15672:15672'
+      - '5672:5672'
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
