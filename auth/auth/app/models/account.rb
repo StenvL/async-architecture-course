@@ -31,16 +31,16 @@ class Account < ApplicationRecord
       producer: 'auth_service',
       event_name: 'AccountCreated',
       data: {
-        public_id: account.public_id,
+        id: account.id,
         email: account.email,
         full_name: account.full_name,
-        position: account.position
+        role: account.role
       }
     }
     # result = SchemaRegistry.validate_event(event, 'accounts.created', version: 1)
 
     # if result.success?
-    Producer.new.call(event, topic: 'accounts-stream')
+    Producer.new.call(event, topic: 'users', key: 'created')
     # end
     # --------------------------------------------------------------------
   end

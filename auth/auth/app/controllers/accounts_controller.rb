@@ -33,7 +33,7 @@ class AccountsController < ApplicationController
           **account_event_data,
           event_name: 'AccountUpdated',
           data: {
-            public_id: @account.public_id,
+            id: @account.id,
             email: @account.email,
             full_name: @account.full_name,
             position: @account.position
@@ -42,13 +42,13 @@ class AccountsController < ApplicationController
         # result = SchemaRegistry.validate_event(event, 'accounts.updated', version: 1)
         #
         # if result.success?
-        Producer.new.call(event, topic: 'accounts-stream')
+        Producer.new.call(event, topic: 'users', key: 'updated')
         # else
 
         # end
         # --------------------------------------------------------------------
 
-        produce_be_event(@account.public_id, new_role) if new_role
+        produce_be_event(@account.id, new_role) if new_role
 
         # --------------------------------------------------------------------
 
@@ -72,12 +72,12 @@ class AccountsController < ApplicationController
     event = {
       **account_event_data,
       event_name: 'AccountDeleted',
-      data: { public_id: @account.public_id }
+      data: { id: @account.id }
     }
     # result = SchemaRegistry.validate_event(event, 'accounts.deleted', version: 1)
     #
     # if result.success?
-    Producer.new.call(event, topic: 'accounts-stream')
+    Producer.new.call(event, topic: 'users', key: 'deleted')
 
     # end
     # --------------------------------------------------------------------
@@ -116,16 +116,16 @@ class AccountsController < ApplicationController
       params.require(:account).permit(:full_name, :role)
     end
 
-    def produce_be_event(public_id, role)
+    def produce_be_event(id, role)
       event = {
         **account_event_data,
         event_name: 'AccountRoleChanged',
-        data: { public_id: public_id, role: role }
+        data: { id: id, role: role }
       }
       # result = SchemaRegistry.validate_event(event, 'accounts.role_changed', version: 1)
       #
       # if result.success?
-      Producer.new.call(event, topic: 'accounts')
+      Producer.new.call(event, topic: 'users', key: 'role_changed')
       # end
     end
 end

@@ -1,23 +1,65 @@
-version: '3.9'
+---
+version: '3'
 services:
-  mysql:
-    container_name: mysql
-    image: mariadb
-    ports:
-      - '3306:3306'
-    volumes:
-      - ./volumes/mysql:/var/lib/mysql
-      - ./db/init.sql:/init.sql
-    command: --init-file /init.sql
-    environment:
-      MYSQL_ROOT_PASSWORD: pass
+  # reference docker-compose file: https://github.com/dmaze/docker-rabbitmq-example/blob/master/docker-compose.yml
+  rabbitmq:
+    # There is a prebuilt RabbitMQ image; see
+    # https://hub.docker.com/_/rabbitmq/ for details.
+    # This variant is built on Alpine Linux (it's smaller) and includes
+    # the management UI.
+    image: 'rabbitmq:3.6-management-alpine'
 
-  rabbit_mq:
-    container_name: rabbit_mq
-    image: rabbitmq:3.6.5-management
+    # These ports are exposed on the host; 'hostport:containerport'.
+    # You could connect to this server from outside with the *host's*
+    # DNS name or IP address and port 5672 (the left-hand side of the
+    # colon).
     ports:
-      - '15672:15672'
+      # The standard AMQP protocol port
       - '5672:5672'
+      # HTTP management UI
+      - '15672:15672'
+
+    # Run this container on a private network for this application.
+    # This is necessary for magic Docker DNS to work: other containers
+    # also running on this network will see a host name "rabbitmq"
+    # (the name of this section) and the internal port 5672, even though
+    # that's not explicitly published above.
+    networks:
+      - network
+
+  db:
+    image: postgres
+    container_name: psql
+    ports:
+      - '5432:5432'
+    volumes:
+      - ./tmp/db:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
     environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
+      POSTGRES_PASSWORD: password
+    networks:
+      - network
+
+  oauth:
+    container_name: oauth
+    build: ./auth/auth/.
+    command: ['rails', 'server', '-p', '3000', '-b', '0.0.0.0']
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+      - rabbitmq
+    environment:
+      RAILS_ENV: 'development'
+      DATABASE_URL: 'postgres://postgres:password@db:5432/auth'
+      KAFKA_URL: 'kafka://172.20.0.20:9092'
+      BROKER_ADAPTER: 'rabbitmq'
+      AMQP_URL: 'amqp://rabbitmq?connection_attempts=5&retry_delay=5'
+    networks:
+      - network
+  
+networks:
+  # Declare our private network.  We must declare one for the magic
+  # Docker DNS to work, but otherwise its default settings are fine.
+  network: {}
+
