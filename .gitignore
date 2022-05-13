@@ -13,8 +13,7 @@
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
-/.idea/inspectionProfiles/Project_Default.xml
-/.idea/.gitignore
-/.idea/async-architecture-course.iml
-/.idea/modules.xml
-/.idea/vcs.xml
+/.idea/*
+*/tmp
+tmp
+

@@ -1,0 +1,149 @@
+basePath: /api
+definitions:
+  api.newTaskRequest:
+    properties:
+      description:
+        type: string
+      title:
+        type: string
+    type: object
+  model.Task:
+    properties:
+      assignee:
+        type: integer
+      created:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      status:
+        type: string
+      title:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: Task-tracker service for popugs.
+  version: "1.0"
+paths:
+  /tasks:
+    get:
+      consumes:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Task'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - OAuth2Implicit:
+        - read
+      summary: Returns tasks, assigned to user
+      tags:
+      - Tasks
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Data for creating task
+        in: body
+        name: task
+        required: true
+        schema:
+          $ref: '#/definitions/api.newTaskRequest'
+      responses:
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - OAuth2Implicit:
+        - write
+      summary: Creates new task
+      tags:
+      - Tasks
+  /tasks/resolve/{id}:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: ""
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - OAuth2Implicit:
+        - write
+      summary: Set task status to "Resolved"
+      tags:
+      - Tasks
+  /tasks/shuffle:
+    post:
+      consumes:
+      - application/json
+      responses:
+        "200":
+          description: ""
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - OAuth2Implicit:
+        - admin
+      summary: Shuffles undone tasks randomly between popugs
+      tags:
+      - Tasks
+securityDefinitions:
+  OAuth2Implicit:
+    authorizationUrl: http://localhost:3000/oauth/authorize
+    flow: implicit
+    scopes:
+      admin: ' Grants read and write access to administrative information'
+      read: ' Grants read access'
+      write: ' Grants write access'
+    type: oauth2
+swagger: "2.0"
+x-extension-openapi:
+  example: value in a json format
