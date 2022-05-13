@@ -1,11 +1,10 @@
-module github.com/StenvL/async-architecture-course
+module github.com/StenvL/async-architecture-course/tracker
 
 go 1.17
 
 require (
 	github.com/gin-gonic/gin v1.7.7
 	github.com/go-resty/resty/v2 v2.7.0
-	github.com/google/uuid v1.3.0
 	github.com/guregu/null v4.0.0+incompatible
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/lib/pq v1.2.0

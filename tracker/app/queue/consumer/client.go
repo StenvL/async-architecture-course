@@ -1,8 +1,8 @@
 package consumer
 
 import (
-	"github.com/StenvL/async-architecture-course/app/queue/client"
-	"github.com/StenvL/async-architecture-course/app/repository"
+	"github.com/StenvL/async-architecture-course/tracker/app/queue/client"
+	"github.com/StenvL/async-architecture-course/tracker/app/repository"
 )
 
 type msgHandler func(msg []byte) error

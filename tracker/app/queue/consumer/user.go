@@ -3,7 +3,7 @@ package consumer
 import (
 	"encoding/json"
 
-	"github.com/StenvL/async-architecture-course/app/model"
+	"github.com/StenvL/async-architecture-course/tracker/app/model"
 	"github.com/guregu/null"
 )
 

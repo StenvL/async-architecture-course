@@ -3,7 +3,7 @@ package repository
 import (
 	"math/rand"
 
-	"github.com/StenvL/async-architecture-course/app/model"
+	"github.com/StenvL/async-architecture-course/tracker/app/model"
 )
 
 func (r Repository) GetUserTasks(userID int) (tasks []model.Task, err error) {

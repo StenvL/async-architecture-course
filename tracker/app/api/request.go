@@ -1,7 +1,7 @@
 package api
 
 import (
-	"github.com/StenvL/async-architecture-course/app/model"
+	"github.com/StenvL/async-architecture-course/tracker/app/model"
 )
 
 type newTaskRequest struct {

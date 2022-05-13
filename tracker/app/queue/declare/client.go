@@ -1,6 +1,6 @@
 package declare
 
-import "github.com/StenvL/async-architecture-course/app/queue/client"
+import "github.com/StenvL/async-architecture-course/tracker/app/queue/client"
 
 type Client struct {
 	mq client.Client

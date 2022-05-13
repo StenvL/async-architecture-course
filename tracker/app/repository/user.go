@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"github.com/StenvL/async-architecture-course/app/model"
+	"github.com/StenvL/async-architecture-course/tracker/app/model"
 )
 
 func (r Repository) GetUsers() (users []model.User, err error) {

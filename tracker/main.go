@@ -3,15 +3,15 @@ package main
 import (
 	"log"
 
-	"github.com/StenvL/async-architecture-course/app/queue/consumer"
+	"github.com/StenvL/async-architecture-course/tracker/app/queue/consumer"
 
-	"github.com/StenvL/async-architecture-course/app/repository"
+	"github.com/StenvL/async-architecture-course/tracker/app/repository"
 
-	"github.com/StenvL/async-architecture-course/app/queue/declare"
-	"github.com/StenvL/async-architecture-course/app/queue/producer"
+	"github.com/StenvL/async-architecture-course/tracker/app/queue/declare"
+	"github.com/StenvL/async-architecture-course/tracker/app/queue/producer"
 
-	"github.com/StenvL/async-architecture-course/app/api"
-	mqclient "github.com/StenvL/async-architecture-course/app/queue/client"
+	"github.com/StenvL/async-architecture-course/tracker/app/api"
+	mqclient "github.com/StenvL/async-architecture-course/tracker/app/queue/client"
 
 	_ "github.com/lib/pq"
 )

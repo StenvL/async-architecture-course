@@ -3,12 +3,12 @@ package api
 import (
 	"log"
 
-	"github.com/StenvL/async-architecture-course/app/repository"
+	"github.com/StenvL/async-architecture-course/tracker/app/repository"
 
-	"github.com/StenvL/async-architecture-course/app/queue/producer"
+	"github.com/StenvL/async-architecture-course/tracker/app/queue/producer"
 	"github.com/gin-gonic/gin"
 
-	_ "github.com/StenvL/async-architecture-course/docs"
+	_ "github.com/StenvL/async-architecture-course/tracker/docs"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
