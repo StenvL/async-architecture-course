@@ -3,11 +3,8 @@ package producer
 import (
 	"encoding/json"
 	"fmt"
-	"time"
-
-	"github.com/StenvL/async-architecture-course/tracker/app/model"
-
 	"schemaregistry"
+	"time"
 
 	"github.com/google/uuid"
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -22,16 +19,18 @@ type event struct {
 	Data         interface{} `json:"data"`
 }
 
-func (c Client) TaskCreated(data model.Task) error {
-	return c.produce("tasks.created", data, 1)
+type PaymentMadePayload struct {
 }
 
-func (c Client) TasksShuffled(data map[uuid.UUID]int) error {
-	return c.produce("tasks.shuffled", data, 1)
+func (c Client) PaymentMade(data PaymentMadePayload) error {
+	return c.produce("billing.payment_made", data, 1)
 }
 
-func (c Client) TaskCompleted(data model.TaskCompletedEvent) error {
-	return c.produce("tasks.completed", data, 1)
+type TaskEstimated struct {
+}
+
+func (c Client) TaskEstimated(data TaskEstimated) error {
+	return c.produce("billing.task_estimated", data, 1)
 }
 
 func (c Client) produce(exchange string, data interface{}, version int) error {

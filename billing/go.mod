@@ -1,4 +1,4 @@
-module github.com/StenvL/async-architecture-course/tracker
+module github.com/StenvL/async-architecture-course/billing
 
 go 1.17
 
@@ -12,7 +12,7 @@ require (
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/lib/pq v1.2.0
 	github.com/rabbitmq/amqp091-go v1.3.4
-	github.com/swaggo/files v0.0.0-20210815190702-a29dd2bc99b2
+	github.com/shopspring/decimal v1.3.1
 	github.com/swaggo/gin-swagger v1.4.3
 	github.com/swaggo/swag v1.8.1
 	schemaregistry v0.0.0-00010101000000-000000000000

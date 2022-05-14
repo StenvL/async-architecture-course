@@ -42,7 +42,7 @@ class AccountsController < ApplicationController
         # result = SchemaRegistry.validate_event(event, 'accounts.updated', version: 1)
         #
         # if result.success?
-        Producer.new.call(event, topic: 'users', key: 'updated')
+        Producer.new.call(event, topic: 'users.updated')
         # else
 
         # end
@@ -77,7 +77,7 @@ class AccountsController < ApplicationController
     # result = SchemaRegistry.validate_event(event, 'accounts.deleted', version: 1)
     #
     # if result.success?
-    Producer.new.call(event, topic: 'users', key: 'deleted')
+    Producer.new.call(event, topic: 'users.deleted')
 
     # end
     # --------------------------------------------------------------------
@@ -125,7 +125,7 @@ class AccountsController < ApplicationController
       # result = SchemaRegistry.validate_event(event, 'accounts.role_changed', version: 1)
       #
       # if result.success?
-      Producer.new.call(event, topic: 'users', key: 'role_changed')
+      Producer.new.call(event, topic: 'users.role_changed')
       # end
     end
 end
