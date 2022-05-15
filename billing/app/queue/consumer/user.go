@@ -3,6 +3,7 @@ package consumer
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 
 	"github.com/StenvL/async-architecture-course/billing/app/model"
 	"github.com/guregu/null"
@@ -128,7 +129,7 @@ func (c Client) userRoleChangedConsumer() {
 }
 
 func (c Client) consume(queueName, consumerName string, handler msgHandler) error {
-	msgs, _ := c.mq.Channel.Consume(
+	msgs, err := c.mq.Channel.Consume(
 		queueName,
 		consumerName,
 		false,
@@ -137,6 +138,9 @@ func (c Client) consume(queueName, consumerName string, handler msgHandler) erro
 		false,
 		nil,
 	)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	for msg := range msgs {
 		if err := handler(msg.Body); err != nil {

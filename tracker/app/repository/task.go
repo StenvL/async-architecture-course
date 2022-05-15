@@ -34,7 +34,7 @@ func (r Repository) CreateTask(task *model.Task) error {
 	}
 
 	return r.db.Get(
-		task, "select id, public_id, title, status, description, created, assignee from tasks where id = $1", taskID,
+		task, "select id, public_id, title, key, status, description, created, assignee from tasks where id = $1", taskID,
 	)
 }
 

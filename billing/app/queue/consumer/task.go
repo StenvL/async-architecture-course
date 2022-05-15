@@ -14,6 +14,7 @@ import (
 
 func (c Client) ConsumeTaskEvents() error {
 	c.taskCreatedConsumer()
+	c.taskCreatedConsumerV2()
 	c.taskCompletedConsumer()
 	c.tasksShuffledConsumer()
 
@@ -31,11 +32,16 @@ func (c Client) taskCreatedConsumer() {
 			Assignee    int       `json:"assignee"`
 		}
 		msgStruct := struct {
-			Data eventPayload `json:"data"`
+			Version int          `json:"event_version"`
+			Data    eventPayload `json:"data"`
 		}{}
 
 		if err := json.Unmarshal(msg, &msgStruct); err != nil {
 			return err
+		}
+
+		if msgStruct.Version != 1 {
+			return nil
 		}
 
 		cost := decimal.New(int64(rand.Intn(100)), 0)
@@ -57,6 +63,52 @@ func (c Client) taskCreatedConsumer() {
 	}
 
 	go c.consume("billing.tasks.created", "billing/tasks.created", handler)
+}
+
+func (c Client) taskCreatedConsumerV2() {
+	handler := func(msg []byte) error {
+		type eventPayload struct {
+			ID          uuid.UUID `json:"public_id"`
+			Title       string    `json:"title"`
+			Key         string    `json:"key"`
+			Status      string    `json:"status"`
+			Created     time.Time `json:"created"`
+			Description string    `json:"description"`
+			Assignee    int       `json:"assignee"`
+		}
+		msgStruct := struct {
+			Version int          `json:"event_version"`
+			Data    eventPayload `json:"data"`
+		}{}
+
+		if err := json.Unmarshal(msg, &msgStruct); err != nil {
+			return err
+		}
+
+		if msgStruct.Version != 2 {
+			return nil
+		}
+
+		cost := decimal.New(int64(rand.Intn(100)), 0)
+		task := model.Task{
+			ID:          msgStruct.Data.ID,
+			Title:       msgStruct.Data.Title,
+			Key:         msgStruct.Data.Key,
+			Status:      msgStruct.Data.Status,
+			Created:     msgStruct.Data.Created,
+			Description: msgStruct.Data.Description,
+			Assignee:    msgStruct.Data.Assignee,
+			Cost:        cost,
+			Reward:      cost.Mul(decimal.New(3, 0)),
+		}
+		if err := c.repo.CreateTask(task); err != nil {
+			return err
+		}
+
+		return nil
+	}
+
+	go c.consume("billing.tasks.created.v2", "billing/tasks.created.v2", handler)
 }
 
 func (c Client) taskCompletedConsumer() {

@@ -11,6 +11,7 @@ import (
 type Task struct {
 	ID          uuid.UUID       `db:"id" json:"id,omitempty"`
 	Title       string          `db:"title" json:"title,omitempty"`
+	Key         string          `db:"key" json:"key,omitempty"`
 	Status      string          `db:"status" json:"status,omitempty"`
 	Created     time.Time       `db:"created" json:"created"`
 	Description string          `db:"description" json:"description,omitempty"`

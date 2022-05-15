@@ -23,8 +23,8 @@ func (r Repository) CreateTask(task model.Task) error {
 	}
 
 	query := `
-		insert into tasks (id, title, status, created, description, assignee, cost, reward)
-		values (:id, :title, :status, :created, :description, :assignee, :cost, :reward)`
+		insert into tasks (id, title, key, status, created, description, assignee, cost, reward)
+		values (:id, :title, :key, :status, :created, :description, :assignee, :cost, :reward)`
 	query, args, err := sqlx.Named(query, task)
 	if err != nil {
 		_ = tx.Rollback()

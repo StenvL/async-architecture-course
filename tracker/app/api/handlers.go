@@ -67,7 +67,16 @@ func (s Server) NewTaskHandler(ctx *gin.Context) {
 		return
 	}
 
-	if err := s.producer.TaskCreated(task); err != nil {
+	if err := s.producer.TaskCreated(model.NewTaskEvent{
+		ID:          task.ID,
+		PublicID:    task.PublicID,
+		Title:       task.Title,
+		Key:         fmt.Sprintf("POPUG-%v", task.Key),
+		Status:      task.Status,
+		Created:     task.Created,
+		Description: task.Description,
+		Assignee:    task.Assignee,
+	}); err != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, "produce task created event")
 		return
 	}

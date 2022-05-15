@@ -22,8 +22,8 @@ type event struct {
 	Data         interface{} `json:"data"`
 }
 
-func (c Client) TaskCreated(data model.Task) error {
-	return c.produce("tasks.created", data, 1)
+func (c Client) TaskCreated(data model.NewTaskEvent) error {
+	return c.produce("tasks.created", data, 2)
 }
 
 func (c Client) TasksShuffled(data map[uuid.UUID]int) error {
@@ -49,7 +49,7 @@ func (c Client) produce(exchange string, data interface{}, version int) error {
 		return fmt.Errorf("marshal event to JSON: %w", err)
 	}
 
-	valid, err := schemaregistry.Validate(exchange, eJSON, 1)
+	valid, err := schemaregistry.Validate(exchange, eJSON, version)
 	if err != nil {
 		return err
 	}
