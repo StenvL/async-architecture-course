@@ -52,10 +52,10 @@ func (r Repository) getAccountHistory(userID int) ([]model.HistoryItem, error) {
 	var res []model.HistoryItem
 
 	query := `
-		select aul.type, aul.balance_change, t.title as task_title, t.description as task_description, t.reward as task_reward
-		from accounts_audit_log aul 
+		select aul.type, aul.balance_change, coalesce('[' || t.key || '] - ' || t.title, t.title) as task_title, t.description as task_description, t.reward as task_reward
+		from accounts_audit_log aul
 			join accounts a on aul.account_id = a.id
-		    left join tasks t on aul.task_id = t.id
+			left join tasks t on aul.task_id = t.id
 		where a.user_id = $1
 		order by aul.id desc`
 	if err := r.db.Select(&res, query, userID); err != nil {
