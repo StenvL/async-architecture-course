@@ -1,0 +1,121 @@
+basePath: /api
+definitions:
+  model.Account:
+    properties:
+      balance:
+        type: number
+      history:
+        items:
+          $ref: '#/definitions/model.HistoryItem'
+        type: array
+    type: object
+  model.HistoryItem:
+    properties:
+      balance_change:
+        type: number
+      task_description:
+        type: string
+      task_reward:
+        type: number
+      task_title:
+        type: string
+      type:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: Billing service for popugs.
+  version: "1.0"
+paths:
+  /account:
+    get:
+      consumes:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Account'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - OAuth2Implicit:
+        - read
+      summary: Returns user's, account data
+      tags:
+      - Account
+  /income:
+    get:
+      consumes:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "403":
+          description: Forbidden
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - OAuth2Implicit:
+        - admin
+        - manager
+      summary: Returns company's daily income
+      tags:
+      - Admin
+  /pay:
+    post:
+      consumes:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "403":
+          description: Forbidden
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - OAuth2Implicit:
+        - admin
+        - manager
+      summary: Makes payments to users
+      tags:
+      - Admin
+securityDefinitions:
+  OAuth2Implicit:
+    authorizationUrl: http://localhost:3000/oauth/authorize
+    flow: implicit
+    scopes:
+      admin: ' Grants read and write access to administrative information'
+      manager: ' Grants read and write access to managers information'
+      read: ' Grants read access'
+      write: ' Grants write access'
+    type: oauth2
+swagger: "2.0"
+x-extension-openapi:
+  example: value in a json format

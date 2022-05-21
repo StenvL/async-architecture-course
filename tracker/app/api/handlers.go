@@ -1,10 +1,11 @@
 package api
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
+
+	"github.com/StenvL/async-architecture-course/tracker/app/model"
 
 	"github.com/gin-gonic/gin"
 )
@@ -61,14 +62,23 @@ func (s Server) NewTaskHandler(ctx *gin.Context) {
 	}
 
 	task := req.toModel()
-	if err := s.repo.CreateTask(task); err != nil {
+	if err := s.repo.CreateTask(&task); err != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("creating task in DB: %v", err))
 		return
 	}
 
-	taskJSON, err := json.Marshal(task)
-	if err = s.producer.TaskCreated(string(taskJSON)); err != nil {
+	if err := s.producer.TaskCreated(model.NewTaskEvent{
+		ID:          task.ID,
+		PublicID:    task.PublicID,
+		Title:       task.Title,
+		Key:         fmt.Sprintf("POPUG-%v", task.Key),
+		Status:      task.Status,
+		Created:     task.Created,
+		Description: task.Description,
+		Assignee:    task.Assignee,
+	}); err != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, "produce task created event")
+		return
 	}
 
 	ctx.AbortWithStatus(http.StatusCreated)
@@ -105,18 +115,20 @@ func (s Server) MarkTaskResolvedHandler(ctx *gin.Context) {
 		return
 	}
 
-	// TODo: Не слать событие, если задача не на текущем пользователе.
-	if err = s.repo.MarkTaskAsResolved(userID, taskID); err != nil {
+	// TODO: restrict completing the task more than 1 times.
+	exists, publicID, err := s.repo.MarkTaskAsResolved(userID, taskID)
+	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("updating task resolved task in DB: %v", err))
 		return
 	}
-
-	type taskCompletedEvent struct {
-		ID int `json:"id"`
+	if !exists {
+		ctx.AbortWithStatus(http.StatusForbidden)
+		return
 	}
-	eventJSON, _ := json.Marshal(taskCompletedEvent{ID: taskID})
-	if err = s.producer.TaskCompleted(string(eventJSON)); err != nil {
+
+	if err = s.producer.TaskCompleted(model.TaskCompletedEvent{ID: publicID, Assignee: userID}); err != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, "produce task completed event")
+		return
 	}
 
 	ctx.AbortWithStatus(http.StatusOK)
@@ -144,20 +156,19 @@ func (s Server) ShuffleTasksHandler(ctx *gin.Context) {
 		return
 	}
 
-	taskIDs, err := s.repo.GetTaskIDsToShuffle()
+	tasks, err := s.repo.GetTasksToShuffle()
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("getting task ids to shuffle from DB: %v", err))
 		return
 	}
 
-	assigns, err := s.repo.ShuffleTasks(users, taskIDs)
+	assigns, err := s.repo.ShuffleTasks(users, tasks)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("shuffling tasks: %v", err))
 		return
 	}
 
-	assignsJSON, _ := json.Marshal(assigns)
-	if err = s.producer.TasksShuffled(string(assignsJSON)); err != nil {
+	if err = s.producer.TasksShuffled(assigns); err != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, "produce tasks shuffled event")
 		return
 	}

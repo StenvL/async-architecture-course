@@ -2,8 +2,10 @@ package consumer
 
 import (
 	"encoding/json"
+	"fmt"
+	"log"
 
-	"github.com/StenvL/async-architecture-course/tracker/app/model"
+	"github.com/StenvL/async-architecture-course/billing/app/model"
 	"github.com/guregu/null"
 )
 
@@ -41,10 +43,14 @@ func (c Client) userCreatedConsumer() {
 			return err
 		}
 
+		if err := c.repo.CreateAccount(msgStruct.Data.ID); err != nil {
+			return err
+		}
+
 		return nil
 	}
 
-	go c.consume("tracker.users.created", "tracker/users.created", handler)
+	go c.consume("billing.users.created", "billing/users.created", handler)
 }
 
 func (c Client) userUpdatedConsumer() {
@@ -73,7 +79,7 @@ func (c Client) userUpdatedConsumer() {
 		return nil
 	}
 
-	go c.consume("tracker.users.updated", "tracker/users.updated", handler)
+	go c.consume("billing.users.updated", "billing/users.updated", handler)
 }
 func (c Client) userDeletedConsumer() {
 	handler := func(msg []byte) error {
@@ -95,7 +101,7 @@ func (c Client) userDeletedConsumer() {
 		return nil
 	}
 
-	go c.consume("tracker.users.deleted", "tracker/users.deleted", handler)
+	go c.consume("billing.users.deleted", "billing/users.deleted", handler)
 }
 
 func (c Client) userRoleChangedConsumer() {
@@ -119,11 +125,11 @@ func (c Client) userRoleChangedConsumer() {
 		return nil
 	}
 
-	go c.consume("tracker.users.role_changed", "tracker/users.role_changed", handler)
+	go c.consume("billing.users.role_changed", "billing/users.role_changed", handler)
 }
 
 func (c Client) consume(queueName, consumerName string, handler msgHandler) error {
-	msgs, _ := c.mq.Channel.Consume(
+	msgs, err := c.mq.Channel.Consume(
 		queueName,
 		consumerName,
 		false,
@@ -132,10 +138,16 @@ func (c Client) consume(queueName, consumerName string, handler msgHandler) erro
 		false,
 		nil,
 	)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	for msg := range msgs {
 		if err := handler(msg.Body); err != nil {
-			_ = msg.Nack(false, false)
+			fmt.Println(err)
+			if err = msg.Nack(false, false); err != nil {
+				return err
+			}
 		}
 
 		if err := msg.Ack(false); err != nil {

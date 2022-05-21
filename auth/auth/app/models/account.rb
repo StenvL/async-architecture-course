@@ -40,7 +40,7 @@ class Account < ApplicationRecord
     # result = SchemaRegistry.validate_event(event, 'accounts.created', version: 1)
 
     # if result.success?
-    Producer.new.call(event, topic: 'users', key: 'created')
+    Producer.new.call(event, topic: 'users.created')
     # end
     # --------------------------------------------------------------------
   end

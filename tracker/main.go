@@ -26,9 +26,14 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if err = declare.New(mq).DeclareTaskQueues(); err != nil {
+
+	if err = declare.New(mq).DeclareExchanges(); err != nil {
 		log.Fatal(err)
 	}
+	if err = declare.New(mq).DeclareUserQueues(); err != nil {
+		log.Fatal(err)
+	}
+
 	if err = consumer.New(mq, repo).ConsumeUserEvents(); err != nil {
 		log.Fatal(err)
 	}
