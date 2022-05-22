@@ -35,15 +35,15 @@ func main() {
 		log.Fatal(err)
 	}
 
-	cons := consumer.New(mq, repo)
+	msgProducer := producer.New(mq)
+
+	cons := consumer.New(mq, repo, msgProducer)
 	if err = cons.ConsumeUserEvents(); err != nil {
 		log.Fatal(err)
 	}
 	if err = cons.ConsumeTaskEvents(); err != nil {
 		log.Fatal(err)
 	}
-
-	msgProducer := producer.New(mq)
 
 	server := api.New(repo, msgProducer)
 	server.SetupRoutes()

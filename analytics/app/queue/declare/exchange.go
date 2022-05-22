@@ -14,15 +14,6 @@ func (c Client) DeclareExchanges() error {
 		return err
 	}
 
-	if err := c.declare("tasks.created"); err != nil {
-		return err
-	}
-	if err := c.declare("tasks.shuffled"); err != nil {
-		return err
-	}
-	if err := c.declare("tasks.completed"); err != nil {
-		return err
-	}
 	if err := c.declare("tasks.estimated"); err != nil {
 		return err
 	}

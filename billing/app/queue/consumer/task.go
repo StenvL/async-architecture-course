@@ -5,6 +5,8 @@ import (
 	"math/rand"
 	"time"
 
+	"github.com/StenvL/async-architecture-course/billing/app/queue/producer"
+
 	"github.com/shopspring/decimal"
 
 	"github.com/google/uuid"
@@ -14,7 +16,6 @@ import (
 
 func (c Client) ConsumeTaskEvents() error {
 	c.taskCreatedConsumer()
-	c.taskCreatedConsumerV2()
 	c.taskCompletedConsumer()
 	c.tasksShuffledConsumer()
 
@@ -22,50 +23,6 @@ func (c Client) ConsumeTaskEvents() error {
 }
 
 func (c Client) taskCreatedConsumer() {
-	handler := func(msg []byte) error {
-		type eventPayload struct {
-			ID          uuid.UUID `json:"public_id"`
-			Title       string    `json:"title"`
-			Status      string    `json:"status"`
-			Created     time.Time `json:"created"`
-			Description string    `json:"description"`
-			Assignee    int       `json:"assignee"`
-		}
-		msgStruct := struct {
-			Version int          `json:"event_version"`
-			Data    eventPayload `json:"data"`
-		}{}
-
-		if err := json.Unmarshal(msg, &msgStruct); err != nil {
-			return err
-		}
-
-		if msgStruct.Version != 1 {
-			return nil
-		}
-
-		cost := decimal.New(int64(rand.Intn(100)), 0)
-		task := model.Task{
-			ID:          msgStruct.Data.ID,
-			Title:       msgStruct.Data.Title,
-			Status:      msgStruct.Data.Status,
-			Created:     msgStruct.Data.Created,
-			Description: msgStruct.Data.Description,
-			Assignee:    msgStruct.Data.Assignee,
-			Cost:        cost,
-			Reward:      cost.Mul(decimal.New(3, 0)),
-		}
-		if err := c.repo.CreateTask(task); err != nil {
-			return err
-		}
-
-		return nil
-	}
-
-	go c.consume("billing.tasks.created", "billing/tasks.created", handler)
-}
-
-func (c Client) taskCreatedConsumerV2() {
 	handler := func(msg []byte) error {
 		type eventPayload struct {
 			ID          uuid.UUID `json:"public_id"`
@@ -90,7 +47,8 @@ func (c Client) taskCreatedConsumerV2() {
 		}
 
 		cost := decimal.New(int64(rand.Intn(100)), 0)
-		task := model.Task{
+		reward := cost.Mul(decimal.New(3, 0))
+		accID, err := c.repo.CreateTask(model.Task{
 			ID:          msgStruct.Data.ID,
 			Title:       msgStruct.Data.Title,
 			Key:         msgStruct.Data.Key,
@@ -99,16 +57,32 @@ func (c Client) taskCreatedConsumerV2() {
 			Description: msgStruct.Data.Description,
 			Assignee:    msgStruct.Data.Assignee,
 			Cost:        cost,
-			Reward:      cost.Mul(decimal.New(3, 0)),
+			Reward:      reward,
+		})
+		if err != nil {
+			return err
 		}
-		if err := c.repo.CreateTask(task); err != nil {
+
+		if err = c.producer.BalanceChanged(producer.BalanceChanged{
+			AccountID:       accID,
+			BalanceChanging: cost.Neg(),
+			Timestamp:       time.Now(),
+		}); err != nil {
+			return err
+		}
+
+		if err = c.producer.TaskEstimated(producer.TaskEstimated{
+			ID:        msgStruct.Data.ID,
+			Reward:    reward,
+			Timestamp: msgStruct.Data.Created,
+		}); err != nil {
 			return err
 		}
 
 		return nil
 	}
 
-	go c.consume("billing.tasks.created.v2", "billing/tasks.created.v2", handler)
+	go c.consume("billing.tasks.created", "billing/tasks.created", handler)
 }
 
 func (c Client) taskCompletedConsumer() {
@@ -125,7 +99,16 @@ func (c Client) taskCompletedConsumer() {
 			return err
 		}
 
-		if err := c.repo.CompleteTask(msgStruct.Data.ID, msgStruct.Data.Assignee); err != nil {
+		accID, reward, err := c.repo.CompleteTask(msgStruct.Data.ID, msgStruct.Data.Assignee)
+		if err != nil {
+			return err
+		}
+
+		if err = c.producer.BalanceChanged(producer.BalanceChanged{
+			AccountID:       accID,
+			BalanceChanging: reward,
+			Timestamp:       time.Now(),
+		}); err != nil {
 			return err
 		}
 
@@ -148,6 +131,26 @@ func (c Client) tasksShuffledConsumer() {
 
 		if err := c.repo.UpdateShuffledTasks(msgStruct.Data); err != nil {
 			return err
+		}
+
+		for taskID, userID := range msgStruct.Data {
+			taskCost, err := c.repo.GetTaskCost(taskID)
+			if err != nil {
+				return err
+			}
+
+			accountID, err := c.repo.GetAccountID(userID)
+			if err != nil {
+				return err
+			}
+
+			if err = c.producer.BalanceChanged(producer.BalanceChanged{
+				AccountID:       accountID,
+				BalanceChanging: taskCost.Neg(),
+				Timestamp:       time.Now(),
+			}); err != nil {
+				return err
+			}
 		}
 
 		return nil
