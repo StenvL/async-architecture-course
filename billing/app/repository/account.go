@@ -24,6 +24,15 @@ func (r Repository) GetUserAccount(userID int) (model.Account, error) {
 	return res, nil
 }
 
+func (r Repository) GetAccountID(userID int) (int, error) {
+	var accountID int
+	if err := r.db.Get(&accountID, "select id from accounts where user_id = $1", userID); err != nil {
+		return 0, err
+	}
+
+	return accountID, nil
+}
+
 func (r Repository) CreateAccount(userID int) error {
 	_, err := r.db.Exec("insert into accounts (user_id, balance) values ($1, 0)", userID)
 	return err

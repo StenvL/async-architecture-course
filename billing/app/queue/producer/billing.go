@@ -6,6 +6,8 @@ import (
 	"schemaregistry"
 	"time"
 
+	"github.com/shopspring/decimal"
+
 	"github.com/google/uuid"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
@@ -19,18 +21,24 @@ type event struct {
 	Data         interface{} `json:"data"`
 }
 
-type PaymentMadePayload struct {
-}
-
-func (c Client) PaymentMade(data PaymentMadePayload) error {
-	return c.produce("billing.payment_made", data, 1)
-}
-
 type TaskEstimated struct {
+	ID        uuid.UUID       `json:"id"`
+	Reward    decimal.Decimal `json:"reward"`
+	Timestamp time.Time       `json:"timestamp"`
 }
 
 func (c Client) TaskEstimated(data TaskEstimated) error {
-	return c.produce("billing.task_estimated", data, 1)
+	return c.produce("tasks.estimated", data, 1)
+}
+
+type BalanceChanged struct {
+	AccountID       int             `json:"account_id"`
+	BalanceChanging decimal.Decimal `json:"balance_changing"`
+	Timestamp       time.Time       `json:"timestamp"`
+}
+
+func (c Client) BalanceChanged(data BalanceChanged) error {
+	return c.produce("balance.changed", data, 1)
 }
 
 func (c Client) produce(exchange string, data interface{}, version int) error {

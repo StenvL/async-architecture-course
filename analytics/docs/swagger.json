@@ -1,0 +1,161 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "Analytics service for popugs.",
+        "contact": {},
+        "version": "1.0"
+    },
+    "basePath": "/api",
+    "paths": {
+        "/expensive": {
+            "get": {
+                "security": [
+                    {
+                        "OAuth2Implicit": [
+                            "admin",
+                            "manager"
+                        ]
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tasks"
+                ],
+                "summary": "Returns the most expensive task by period",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "From",
+                        "name": "from",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "To",
+                        "name": "to",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.mostExpensiveTaskResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/income": {
+            "get": {
+                "security": [
+                    {
+                        "OAuth2Implicit": [
+                            "admin",
+                            "manager"
+                        ]
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tasks"
+                ],
+                "summary": "Returns tasks, assigned to user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Day",
+                        "name": "day",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.dailyIncomeResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "api.dailyIncomeResponse": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "sum": {
+                    "type": "number"
+                }
+            }
+        },
+        "api.mostExpensiveTaskResponse": {
+            "type": "object",
+            "properties": {
+                "sum": {
+                    "type": "number"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "OAuth2Implicit": {
+            "type": "oauth2",
+            "flow": "implicit",
+            "authorizationUrl": "http://localhost:3000/oauth/authorize",
+            "scopes": {
+                "admin": " Grants read and write access to administrative information",
+                "manager": " Grants manager access"
+            }
+        }
+    },
+    "x-extension-openapi": {
+        "example": "value in a json format"
+    }
+}

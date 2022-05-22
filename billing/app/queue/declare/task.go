@@ -10,15 +10,6 @@ func (c Client) DeclareTaskQueues() error {
 		return err
 	}
 
-	_, err = c.mq.Channel.QueueDeclare("billing.tasks.created.v2", true, false, false, false, nil)
-	if err != nil {
-		return err
-	}
-	err = c.mq.Channel.QueueBind("billing.tasks.created.v2", "", "tasks.created", false, nil)
-	if err != nil {
-		return err
-	}
-
 	_, err = c.mq.Channel.QueueDeclare("billing.tasks.shuffled", true, false, false, false, nil)
 	if err != nil {
 		return err

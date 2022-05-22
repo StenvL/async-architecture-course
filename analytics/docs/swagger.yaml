@@ -1,0 +1,103 @@
+basePath: /api
+definitions:
+  api.dailyIncomeResponse:
+    properties:
+      count:
+        type: integer
+      sum:
+        type: number
+    type: object
+  api.mostExpensiveTaskResponse:
+    properties:
+      sum:
+        type: number
+    type: object
+info:
+  contact: {}
+  description: Analytics service for popugs.
+  version: "1.0"
+paths:
+  /expensive:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: From
+        in: query
+        name: from
+        required: true
+        type: string
+      - description: To
+        in: query
+        name: to
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.mostExpensiveTaskResponse'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - OAuth2Implicit:
+        - admin
+        - manager
+      summary: Returns the most expensive task by period
+      tags:
+      - Tasks
+  /income:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Day
+        in: query
+        name: day
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.dailyIncomeResponse'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - OAuth2Implicit:
+        - admin
+        - manager
+      summary: Returns tasks, assigned to user
+      tags:
+      - Tasks
+securityDefinitions:
+  OAuth2Implicit:
+    authorizationUrl: http://localhost:3000/oauth/authorize
+    flow: implicit
+    scopes:
+      admin: ' Grants read and write access to administrative information'
+      manager: ' Grants manager access'
+    type: oauth2
+swagger: "2.0"
+x-extension-openapi:
+  example: value in a json format

@@ -10,6 +10,8 @@ var schemas = map[string]string{
 	"tasks.created":   "task/created",
 	"tasks.shuffled":  "task/shuffled",
 	"tasks.completed": "task/completed",
+	"tasks.estimated": "task/estimated",
+	"balance.changed": "balance/changed",
 }
 
 func Validate(eventName string, data []byte, version int) (bool, error) {
